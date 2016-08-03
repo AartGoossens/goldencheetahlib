@@ -16,7 +16,11 @@ class GCClient:
         return pd.read_csv(self.host)
 
     def get_activity_list(self):
-        return pd.read_csv(self.athlete_endpoint())
+        return pd.read_csv(
+            filepath_or_buffer=self.athlete_endpoint(),
+            usecols=['date', ' time', ' filename'],
+            parse_dates={'datetime': [0, 1]}
+            ).rename(columns={' filename': 'id'})
 
     def get_athlete_zones(self):
         pass
