@@ -1,3 +1,4 @@
+from functools import lru_cache
 from urllib.parse import quote_plus
 
 import pandas as pd
@@ -35,6 +36,7 @@ class GCClient:
     def get_athlete_zones(self):
         pass
 
+    @lru_cache(maxsize=256)
     def get_activity_by_filename(self, activity_id):
         if not self.athlete:
             raise Exception('self.athlete not defined')
@@ -44,7 +46,7 @@ class GCClient:
         return activity
 
     def get_activity(self, activity):
-        filename = activity[' filename']
+        filename = activity['filename']
         return self.get_activity_by_filename(filename)
     
     def get_activity_bulk(self, activities):
@@ -56,7 +58,6 @@ class GCClient:
     def get_last_activity(self):
         activity_list = self.get_activity_list()
         return self.get_activity(activity_list.iloc[-1])
-
 
     def encoded_athlete(self):
         return quote_plus(self.athlete)
