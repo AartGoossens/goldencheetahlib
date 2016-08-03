@@ -16,11 +16,21 @@ class GCClient:
         return pd.read_csv(self.host)
 
     def get_activity_list(self):
-        return pd.read_csv(
+        activity_list = pd.read_csv(
             filepath_or_buffer=self.athlete_endpoint(),
-            usecols=['date', ' time', ' filename'],
-            parse_dates={'datetime': [0, 1]}
-            ).rename(columns={' filename': 'id'})
+            parse_dates={'datetime': ['date', ' time']}
+        )
+
+        activity_list.rename(columns=lambda x: x.lstrip().lower(), inplace=True)
+        activity_list.rename(
+            columns=lambda x: '_' + x if x[0].isdigit() else x, inplace=True)
+
+        activity_list['has_hr'] = activity_list.average_heart_rate.map(bool)
+        activity_list['has_spd'] = activity_list.average_speed.map(bool)
+        activity_list['has_pwr'] = activity_list.average_power.map(bool)
+        activity_list['has_cad'] = activity_list.average_heart_rate.map(bool)
+
+        return activity_list
 
     def get_athlete_zones(self):
         pass
