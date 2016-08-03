@@ -4,11 +4,11 @@ from urllib.parse import quote_plus
 import pandas as pd
 import requests
 
+from .constants import (
+    DEFAULT_HOST, ACTIVITY_COLUMN_TRANSLATION, ACTIVITY_COLUMN_ORDER)
 
-DEFAULT_HOST = 'http://localhost:12021/'
 
-
-class GCClient:
+class GoldenCheetahClient:
     def __init__(self, athlete=None, host=DEFAULT_HOST):
         self.athlete = athlete
         self.host = host
@@ -38,21 +38,27 @@ class GCClient:
 
     @lru_cache(maxsize=256)
     def get_activity_by_filename(self, activity_id):
+        return requests.get(self.activity_endpoint(activity_id)).json()
+
+    def get_activity(self, activity):
         if not self.athlete:
             raise Exception('self.athlete not defined')
 
-        resp = requests.get(self.activity_endpoint(activity_id))
-        activity = pd.DataFrame(resp.json()['RIDE']['SAMPLES'])
-        return activity
-
-    def get_activity(self, activity):
         filename = activity['filename']
-        return self.get_activity_by_filename(filename)
+        response =  self.get_activity_by_filename(filename)
+
+        activity = pd.DataFrame(response['RIDE']['SAMPLES'])
+        activity.rename(columns=ACTIVITY_COLUMN_TRANSLATION, inplace=True)
+
+        activity.index = pd.to_timedelta(activity.time, unit='s')
+        activity.drop('time', axis=1, inplace=True)
+
+        return activity[[i for i in ACTIVITY_COLUMN_ORDER if i in activity.columns]]
     
     def get_activity_bulk(self, activities):
-        retrieved_activities = []
+        retrieved_activities = {}
         for act in activities.iterrows():
-            retrieved_activities.append(self.get_activity(act[1]))
+            retrieved_activities[act[1]['filename']] = self.get_activity(act[1])
         return retrieved_activities
 
     def get_last_activity(self):
