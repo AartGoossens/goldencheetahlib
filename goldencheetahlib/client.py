@@ -1,11 +1,16 @@
 from functools import lru_cache
 from urllib.parse import quote_plus
 
+import matplotlib
 import pandas as pd
 import requests
 
 from .constants import (
     DEFAULT_HOST, ACTIVITY_COLUMN_TRANSLATION, ACTIVITY_COLUMN_ORDER)
+
+
+# Set ggplot as default plotting style
+# matplotlib.style.use('ggplot')
 
 
 class GoldenCheetahClient:
@@ -36,6 +41,8 @@ class GoldenCheetahClient:
         activity_list['has_spd'] = activity_list.average_speed.map(bool)
         activity_list['has_pwr'] = activity_list.average_power.map(bool)
         activity_list['has_cad'] = activity_list.average_heart_rate.map(bool)
+        activity_list['data'] = pd.Series()
+        activity_list.data = activity_list.data.map(lambda x: pd.DataFrame())
         return activity_list
 
     def get_athlete_zones(self):
@@ -55,19 +62,21 @@ class GoldenCheetahClient:
 
         return activity[[i for i in ACTIVITY_COLUMN_ORDER if i in activity.columns]]
 
-    def get_activity(self, activity):
-        filename = activity['filename']
-        return  self._request_activity_data(self.athlete, filename)
+    def load_activity_data(self, activity):
+        filename = activity.filename
+        activity_data = self._request_activity_data(self.athlete, activity.filename)
+        activity.set_value('data', activity_data)
+        return activity
     
     def get_activity_bulk(self, activities):
-        retrieved_activities = {}
-        for act in activities.iterrows():
-            retrieved_activities[act[1]['filename']] = self.get_activity(act[1])
-        return retrieved_activities
+        for index, filename in activities.filename.iteritems():
+            activity_data = self._request_activity_data(self.athlete, filename)
+            activities.set_value(index, 'data', activity_data)
+        return activities
 
     def get_last_activity(self):
         activity_list = self.get_activity_list()
-        return self.get_activity(activity_list.iloc[-1])
+        return self.load_activity_data(activity_list.iloc[-1].copy())
 
     def _athlete_endpoint(self, athlete):
         return '{host}{athlete}'.format(
