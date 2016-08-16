@@ -17,17 +17,22 @@ The result is this project, *goldencheetahlib*. *goldencheetahlib* is basically 
 
 ## Requirements
 - Python 3 (Python 2 support is not planned)
-- All the libraries in requirements.txt installed (preferably in your virtualenv).
 - GoldenCheetah >3.3 installed and running
+
+## Installation
+Install this library by running this command (preferably in your virtualenv):
+```
+pip install goldencheetahlib
+```
 
 ## Getting started
 First, make sure you meet the requirements. After that, clone this notebook in your project directory. If you have done this succesfully, these code snippets should get you started:
 ```python
 %matplotlib inline
-from goldencheetahlib import client as gc_client
+from goldencheetahlib.client import GoldenCheetahClient
 ```
 ```python
-client = gc_client.GCClient()
+client = GoldenCheetahClient()
 ```
 Find the names of all available athletes:
 ```python
@@ -37,30 +42,29 @@ Set the athlete name in the client:
 ```python
 client.athlete = 'John Doe'
 ```
-(This can also be done by initializing the client with GCClient(athlete='John Doe')
+(This can also be done by initializing the client with GoldenCheetahClient(athlete='John Doe')
 
 Now you can start getting your data from GoldenCheetah:
 ```python
 activity_list = client.get_activity_list()
 ```
 ```python
-last_activity = client.get_last_activity()
+client.get_last_activity()
 ```
 ```python
-first_activity = client.get_activity(activity_list.iloc[0])
+activities = client.get_activity_bulk(activity_list.iloc[:10])
 ```
 
 Because every returned activity and activity_list is a Pandas Dataframe interacting with them is really easy:
 ```python
-last_activity['HR'].mean()
-last_activity['HR'].plot()
+activities.data[0].heartrate.mean()
+activities.data[0].heartrate.plot()
 ```
 
 Try it out!
 
-Example of output:
+(I will add a Jupyter notebook later with some more usage examples)
 
-![Getting started example](docs/resources/getting_started_example.png "Getting started example")
 
 ## License
 The code in this repository is licensed under the [MIT License](http://choosealicense.com/licenses/mit/). GitHub [describes](http://choosealicense.com) this license as follows:
