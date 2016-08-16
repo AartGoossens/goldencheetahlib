@@ -91,6 +91,7 @@ ENV/
 # Vim
 *.swo
 *.swp
+*.swn
 
 # Jupyter Notebooks
 *.ipynb

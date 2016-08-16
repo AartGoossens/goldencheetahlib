@@ -1,0 +1,21 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Connection: [close]
+      Host: ['localhost:12021']
+      User-Agent: [Python-urllib/3.5]
+    method: GET
+    uri: http://localhost:12021/
+  response:
+    body: {string: 'name,dob,weight,height,sex
+
+        Aart, 2089/01/08, 82, 2, Male
+
+        Martijn Veling, 1991/01/01, 85, 1.89, Male
+
+        '}
+    headers:
+      Content-Type: [text; charset=ISO-8859-1]
+    status: {code: 200, message: OK}
+version: 1
