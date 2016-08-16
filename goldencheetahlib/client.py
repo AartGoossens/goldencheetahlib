@@ -2,15 +2,12 @@ from functools import lru_cache
 from urllib.parse import quote_plus
 
 import matplotlib
+import numpy as np
 import pandas as pd
 import requests
 
 from .constants import (
     DEFAULT_HOST, ACTIVITY_COLUMN_TRANSLATION, ACTIVITY_COLUMN_ORDER)
-
-
-# Set ggplot as default plotting style
-# matplotlib.style.use('ggplot')
 
 
 class GoldenCheetahClient:
@@ -41,8 +38,7 @@ class GoldenCheetahClient:
         activity_list['has_spd'] = activity_list.average_speed.map(bool)
         activity_list['has_pwr'] = activity_list.average_power.map(bool)
         activity_list['has_cad'] = activity_list.average_heart_rate.map(bool)
-        activity_list['data'] = pd.Series()
-        activity_list.data = activity_list.data.map(lambda x: pd.DataFrame())
+        activity_list['data'] = pd.Series(dtype=np.dtype("object"))
         return activity_list
 
     def get_athlete_zones(self):
@@ -61,22 +57,20 @@ class GoldenCheetahClient:
         activity.drop('time', axis=1, inplace=True)
 
         return activity[[i for i in ACTIVITY_COLUMN_ORDER if i in activity.columns]]
-
-    def load_activity_data(self, activity):
-        filename = activity.filename
-        activity_data = self._request_activity_data(self.athlete, activity.filename)
-        activity.set_value('data', activity_data)
-        return activity
     
+    def get_activity_by_filename(self, filename):
+        return self._request_activity_data(self.athlete, filename)
+
     def get_activity_bulk(self, activities):
         for index, filename in activities.filename.iteritems():
-            activity_data = self._request_activity_data(self.athlete, filename)
+            activity_data = self.get_activity_by_filename(filename)
             activities.set_value(index, 'data', activity_data)
         return activities
 
     def get_last_activity(self):
-        activity_list = self.get_activity_list()
-        return self.load_activity_data(activity_list.iloc[-1].copy())
+        last_activity = self.get_activity_list().iloc[-1]
+        last_activity.set_value('data', self.get_activity_by_filename(last_activity.filename))
+        return last_activity
 
     def _athlete_endpoint(self, athlete):
         return '{host}{athlete}'.format(
