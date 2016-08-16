@@ -11,10 +11,9 @@ from .constants import (
 
 
 class GoldenCheetahClient:
-        """Class that provides access to GoldenCheetah's REST API
-        Can be used to retrieve lists of and single activities, including raw data.
-        """
-
+    """Class that provides access to GoldenCheetah's REST API
+    Can be used to retrieve lists of and single activities, including raw data.
+    """
     def __init__(self, athlete=None, host=DEFAULT_HOST):
         """Initialize GC client.
 
