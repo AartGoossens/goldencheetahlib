@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/AartGoossens/goldencheetahlib.svg?branch=master)](https://travis-ci.org/AartGoossens/goldencheetahlib)
+
 # GoldenCheetahLib
 Python library that provides local access to activity data in GoldenCheetah.
 
