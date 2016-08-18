@@ -1,7 +1,6 @@
 from functools import lru_cache
 from urllib.parse import quote_plus
 
-import matplotlib
 import numpy as np
 import pandas as pd
 import requests
