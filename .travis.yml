@@ -1,0 +1,15 @@
+language: python
+python:
+- '3.5'
+- 3.5-dev
+install: pip install -r requirements.txt
+script: coverage run --source goldencheetahlib -m unittest discover
+deploy:
+  provider: pypi
+  user: aartgoossens
+  password:
+    secure: cpoTdwhQ8tIaS6Bihphep6QoD0tfRfQDfE5q8twH7kRT9RrwhkZYseQkD0vVL2QhFLcMD+qK45y0cnU5s3uFJrUyaRIPJUPHM53SuYxoubXRXHvyLnMdaNCMNkKINkY0HAW7h/uR6iR9Apy6sJdPGYgc9j87cLAcR9cHGWsfd3/8DTkRZ9B38jwTMgOaq/eHuPIraYdjI023eNcKnRsIhe+xAn6X2z+pyU2KFPbYzDNXs914VKokVjtkn8+r1BScfNVWlqRXzKX4E+NxrJq5jntkx97eYEQJAKEMooWAtcyihgwfGLC6e44MhWrz2LZcBnL3BanjJIs9eq/Vfzzv3QMg/4OM4383lydEXX4XJM8efkY4V98OhCwzyZUNXi7JU8/K2bzATaeeLRyL3uBogi15dFu9G4Df6jMU8GEEq2e1Lje4Vf0GSFQ3np7hlEfKIdGREwfIN6+ZMAq5vYX09hkyiggECyoSARXSTxcu3IopCxg6ySobBJq4j8ykEhze3aj0jlsZLMFrDbDjFQoKhgHdHxlBMS6q2vb6WmF/iYtPxx72SQRiP6cB7QU4t3ssY+8B+e44t0DvY/F+gq7dfN8XECFoGZyQoKHimDzkX3nj/r3ns6g9UF7gGlNovHCjnJLxI/ZrnxBcbqXwD/dR1v9DO4OFXhIK/GRh73RlaEw=
+  on:
+    tags: true
+    distributions: sdist bdist_wheel
+    repo: AartGoossens/goldencheetahlib

@@ -95,3 +95,6 @@ ENV/
 
 # Jupyter Notebooks
 *.ipynb
+
+# macOS
+*.DS_Store
