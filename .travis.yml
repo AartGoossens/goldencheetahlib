@@ -4,6 +4,8 @@ python:
 - 3.5-dev
 install: pip install -r requirements.txt
 script: coverage run --source goldencheetahlib -m unittest discover
+after_success:
+  coveralls
 deploy:
   provider: pypi
   user: aartgoossens
