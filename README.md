@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/AartGoossens/goldencheetahlib.svg?branch=master)](https://travis-ci.org/AartGoossens/goldencheetahlib)
-[![Coverage Status](https://coveralls.io/repos/github/AartGoossens/goldencheetahlib/badge.svg)](https://coveralls.io/github/AartGoossens/goldencheetahlib)
+[![Coverage Status](https://coveralls.io/repos/github/AartGoossens/goldencheetahlib/badge.svg?branch=master)](https://coveralls.io/github/AartGoossens/goldencheetahlib?branch=master)
 
 # GoldenCheetahLib
 Python library that provides local access to activity data in GoldenCheetah.
