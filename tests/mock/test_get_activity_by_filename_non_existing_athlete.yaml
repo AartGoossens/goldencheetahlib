@@ -1,0 +1,16 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.10.0]
+    method: GET
+    uri: http://localhost:12021/John+Non+Existent/activity/2014_01_06_16_45_24.json
+  response:
+    body: {string: unknown athlete John Non Existent}
+    headers:
+      Content-Type: [text; charset=ISO-8859-1]
+    status: {code: 404, message: ''}
+version: 1

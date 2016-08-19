@@ -3,7 +3,8 @@ import pandas as pd
 from unittest import TestCase, skip
 
 from .vcr import vcr
-from goldencheetahlib.client import GoldenCheetahClient
+from goldencheetahlib import GoldenCheetahClient
+from goldencheetahlib import exceptions
 
 
 class TestGoldenCheetahClient(TestCase):
@@ -12,6 +13,16 @@ class TestGoldenCheetahClient(TestCase):
 
     def test_client_init(self):
         client = GoldenCheetahClient(athlete='Aart')
+        self.assertTrue(client)
+        self.assertTrue(client.athlete)
+        self.assertTrue(client.host)
+
+    def test_client_init_without_athlete(self):
+        with self.assertRaises(TypeError):
+            GoldenCheetahClient()
+
+    def test_client_init_non_existing_athlete(self):
+        client = GoldenCheetahClient(athlete='NonExistingAthlete')
         self.assertTrue(client)
         self.assertTrue(client.athlete)
         self.assertTrue(client.host)
@@ -31,6 +42,16 @@ class TestGoldenCheetahClient(TestCase):
             self.assertTrue('height' in athletes.columns)
             self.assertTrue('sex' in athletes.columns)
 
+    def test_get_athletes_invalid_host(self):
+        self.client.host = 'http://localhost:123456/'
+        with self.assertRaises(exceptions.GoldenCheetahNotAvailable):
+            self.client.get_athletes()
+
+    def test_get_athletes_invalid_host_non_http(self):
+        self.client.host = 'blalocalhost:123456/'
+        with self.assertRaises(exceptions.GoldenCheetahNotAvailable):
+            self.client.get_athletes()
+
     def test_get_activity_list(self):
         with vcr.use_cassette('test_get_activity_list.yaml') as cass:
             activity_list = self.client.get_activity_list()
@@ -44,6 +65,17 @@ class TestGoldenCheetahClient(TestCase):
             self.assertTrue(isinstance(activity_list.data[0], np.float))
             self.assertTrue('datetime' in activity_list.columns)
             self.assertTrue('axpower' in activity_list.columns)
+
+    def test_get_activity_list_incorrect_host(self):
+        self.client.host = 'http://localhost:123456/'
+        with self.assertRaises(exceptions.GoldenCheetahNotAvailable):
+            self.client.get_activity_list()
+
+    def test_get_activity_list_non_existing_athlete(self):
+        with vcr.use_cassette('test_get_activity_list_non_existing_athlete.yaml') as cass:
+            self.client.athlete = 'John Non Existent'
+            with self.assertRaises(exceptions.AthleteDoesNotExist):
+                self.client.get_activity_list()
 
     def test_get_activity_by_filename(self):
         with vcr.use_cassette('test_get_activity_by_filename.yaml') as cass:
@@ -62,6 +94,25 @@ class TestGoldenCheetahClient(TestCase):
             self.assertTrue('slope' in activity.columns)
             self.assertTrue('latitude' in activity.columns)
             self.assertTrue('longitude' in activity.columns)
+
+    def test_get_activity_by_filename_incorrect_host(self):
+        self.client.host = 'http://localhost:123456/'
+        with self.assertRaises(exceptions.GoldenCheetahNotAvailable):
+            filename = '2014_01_06_16_45_24.json'
+            self.client.get_activity_by_filename(filename)
+
+    def test_get_activity_by_filename_non_existing_athlete(self):
+        with vcr.use_cassette('test_get_activity_by_filename_non_existing_athlete.yaml') as cass:
+            self.client.athlete = 'John Non Existent'
+            filename = '2014_01_06_16_45_24.json'
+            with self.assertRaises(exceptions.AthleteDoesNotExist):
+                self.client.get_activity_by_filename(filename)
+
+    def test_get_activity_by_non_existing_filename(self):
+        with vcr.use_cassette('test_get_activity_by_non_existing_filename.yaml') as cass:
+            filename = 'non_existing_filename.json'
+            with self.assertRaises(exceptions.ActivityDoesNotExist):
+                self.client.get_activity_by_filename(filename)
 
     def test_get_activity_bulk(self):
         with vcr.use_cassette('test_get_activity_bulk.yaml') as cass:
@@ -155,3 +206,7 @@ class TestGoldenCheetahClient(TestCase):
         endpoint = self.client._activity_endpoint(self.client.athlete, filename)
         self.assertEqual(endpoint,
             'http://localhost:12021/Aart/activity/2014_01_06_16_45_24.json')
+    
+    def test_get_athlete_zones(self):
+        zones = self.client.get_athlete_zones()
+        self.assertTrue(zones is None)
