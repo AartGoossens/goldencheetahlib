@@ -206,3 +206,7 @@ class TestGoldenCheetahClient(TestCase):
         endpoint = self.client._activity_endpoint(self.client.athlete, filename)
         self.assertEqual(endpoint,
             'http://localhost:12021/Aart/activity/2014_01_06_16_45_24.json')
+    
+    def test_get_athlete_zones(self):
+        zones = self.client.get_athlete_zones()
+        self.assertTrue(zones is None)
