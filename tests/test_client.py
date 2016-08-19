@@ -65,6 +65,7 @@ class TestGoldenCheetahClient(TestCase):
             self.assertTrue(isinstance(activity_list.data[0], np.float))
             self.assertTrue('datetime' in activity_list.columns)
             self.assertTrue('axpower' in activity_list.columns)
+            self.assertFalse(' filename' in activity_list.columns)
 
     def test_get_activity_list_incorrect_host(self):
         self.client.host = 'http://localhost:123456/'

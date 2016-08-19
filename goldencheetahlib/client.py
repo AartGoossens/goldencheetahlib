@@ -88,9 +88,11 @@ class GoldenCheetahClient:
         
         activity_list = pd.read_csv(
             filepath_or_buffer=response_buffer,
-            parse_dates={'datetime': ['date', ' time']}
+            parse_dates={'datetime': ['date', 'time']},
+            sep=',\s*',
+            engine='python'
         )
-        activity_list.rename(columns=lambda x: x.lstrip().lower(), inplace=True)
+        activity_list.rename(columns=lambda x: x.lower(), inplace=True)
         activity_list.rename(
             columns=lambda x: '_' + x if x[0].isdigit() else x, inplace=True)
 
