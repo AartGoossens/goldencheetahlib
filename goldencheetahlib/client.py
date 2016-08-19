@@ -1,4 +1,6 @@
 from functools import lru_cache
+from io import StringIO
+import re
 from urllib.parse import quote_plus
 
 import numpy as np
@@ -7,13 +9,16 @@ import requests
 
 from .constants import (
     DEFAULT_HOST, ACTIVITY_COLUMN_TRANSLATION, ACTIVITY_COLUMN_ORDER)
+from .exceptions import (
+    GoldenCheetahNotAvailable, AthleteDoesNotExist,
+    ActivityDoesNotExist)
 
 
 class GoldenCheetahClient:
     """Class that provides access to GoldenCheetah's REST API
     Can be used to retrieve lists of and single activities, including raw data.
     """
-    def __init__(self, athlete=None, host=DEFAULT_HOST):
+    def __init__(self, athlete, host=DEFAULT_HOST):
         """Initialize GC client.
 
         Keyword arguments:
@@ -23,12 +28,14 @@ class GoldenCheetahClient:
         self.athlete = athlete
         self.host = host
 
-    @lru_cache()
     def get_athletes(self):
         """Get all available athletes
         This method is cached to prevent unnecessary calls to GC.
         """
-        return pd.read_csv(self.host)
+        response = self._get_request(self.host)
+        response_buffer = StringIO(response.text)
+        
+        return pd.read_csv(response_buffer)
 
     def get_activity_list(self):
         """Get activity list for client.athlete"""
@@ -69,7 +76,6 @@ class GoldenCheetahClient:
         last_activity.set_value('data', self.get_activity_by_filename(last_activity.filename))
         return last_activity
 
-    @lru_cache()
     def _request_activity_list(self, athlete):
         """Actually do the request for activity list
         This call is slow and therefore this method is memory cached.
@@ -77,10 +83,11 @@ class GoldenCheetahClient:
         Keyword arguments:
         athlete -- Full name of athlete
         """
-        if not self.athlete:
-            raise Exception('self.athlete not defined')
+        response = self._get_request(self._athlete_endpoint(athlete))
+        response_buffer = StringIO(response.text)
+        
         activity_list = pd.read_csv(
-            filepath_or_buffer=self._athlete_endpoint(athlete),
+            filepath_or_buffer=response_buffer,
             parse_dates={'datetime': ['date', ' time']}
         )
         activity_list.rename(columns=lambda x: x.lstrip().lower(), inplace=True)
@@ -94,7 +101,6 @@ class GoldenCheetahClient:
         activity_list['data'] = pd.Series(dtype=np.dtype("object"))
         return activity_list
 
-    @lru_cache(maxsize=256)
     def _request_activity_data(self, athlete, filename):
         """Actually do the request for activity filename
         This call is slow and therefore this method is memory cached.
@@ -103,9 +109,7 @@ class GoldenCheetahClient:
         athlete -- Full name of athlete
         filename -- filename of request activity (e.g. \'2015_04_29_09_03_16.json\')
         """
-        if not self.athlete:
-            raise Exception('self.athlete not defined')
-        response = requests.get(self._activity_endpoint(athlete, filename)).json()
+        response = self._get_request(self._activity_endpoint(athlete, filename)).json()
 
         activity = pd.DataFrame(response['RIDE']['SAMPLES'])
         activity.rename(columns=ACTIVITY_COLUMN_TRANSLATION, inplace=True)
@@ -138,3 +142,32 @@ class GoldenCheetahClient:
             athlete=quote_plus(athlete),
             filename=filename
         )
+
+    @lru_cache(maxsize=256)
+    def _get_request(self, endpoint):
+        """Do actual GET request to GC REST API
+        Also validates responses.
+
+        Keyword arguments:
+        endpoint -- full endpoint for GET request
+        """
+        try:
+            response = requests.get(endpoint)
+        except requests.exceptions.RequestException:
+            raise GoldenCheetahNotAvailable(endpoint)
+        
+        if response.text.startswith('unknown athlete'):
+            match = re.match(
+                pattern='unknown athlete (?P<athlete>.+)',
+                string=response.text)
+            raise AthleteDoesNotExist(
+                athlete=match.groupdict()['athlete'])
+
+        elif response.text == 'file not found':
+            match = re.match(
+                pattern='.+/activity/(?P<filename>.+)',
+                string=endpoint)
+            raise ActivityDoesNotExist(
+                filename=match.groupdict()['filename'])
+
+        return response

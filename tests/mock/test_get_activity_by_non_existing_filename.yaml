@@ -1,0 +1,15 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.10.0]
+    method: GET
+    uri: http://localhost:12021/Aart/activity/non_existing_filename.json
+  response:
+    body: {string: file not found}
+    headers: {}
+    status: {code: 404, message: ''}
+version: 1
