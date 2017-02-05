@@ -1,4 +1,5 @@
 from distutils.core import setup
+
 setup(
   name = 'goldencheetahlib',
   packages = ['goldencheetahlib'], # this must be the same as the name above

@@ -1,17 +1,16 @@
+import re
 from functools import lru_cache
 from io import StringIO
-import re
 from urllib.parse import quote_plus
 
 import numpy as np
 import pandas as pd
 import requests
 
-from .constants import (
-    DEFAULT_HOST, ACTIVITY_COLUMN_TRANSLATION, ACTIVITY_COLUMN_ORDER)
-from .exceptions import (
-    GoldenCheetahNotAvailable, AthleteDoesNotExist,
-    ActivityDoesNotExist)
+from .constants import (ACTIVITY_COLUMN_ORDER, ACTIVITY_COLUMN_TRANSLATION,
+                        DEFAULT_HOST)
+from .exceptions import (ActivityDoesNotExist, AthleteDoesNotExist,
+                         GoldenCheetahNotAvailable)
 
 
 class GoldenCheetahClient:

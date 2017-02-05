@@ -1,10 +1,10 @@
-import numpy as np
-import pandas as pd
 from unittest import TestCase, skip
 
+import numpy as np
+import pandas as pd
+
+from goldencheetahlib import GoldenCheetahClient, exceptions
 from vcr_config import vcr
-from goldencheetahlib import GoldenCheetahClient
-from goldencheetahlib import exceptions
 
 
 class TestGoldenCheetahClient(TestCase):
