@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from unittest import TestCase, skip
 
-from .vcr import vcr
+from vcr_config import vcr
 from goldencheetahlib import GoldenCheetahClient
 from goldencheetahlib import exceptions
 
