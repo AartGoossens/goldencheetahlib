@@ -6,6 +6,7 @@ from urllib.parse import quote_plus
 import numpy as np
 import pandas as pd
 import requests
+from athletic_pandas.models import WorkoutDataFrame
 
 from .constants import (ACTIVITY_COLUMN_ORDER, ACTIVITY_COLUMN_TRANSLATION,
                         DEFAULT_HOST)
@@ -112,8 +113,8 @@ class GoldenCheetahClient:
         """
         response = self._get_request(self._activity_endpoint(athlete, filename)).json()
 
-        activity = pd.DataFrame(response['RIDE']['SAMPLES'])
-        activity.rename(columns=ACTIVITY_COLUMN_TRANSLATION, inplace=True)
+        activity = WorkoutDataFrame(response['RIDE']['SAMPLES'])
+        activity = activity.rename(columns=ACTIVITY_COLUMN_TRANSLATION)
 
         activity.index = pd.to_timedelta(activity.time, unit='s')
         activity.drop('time', axis=1, inplace=True)
