@@ -1,17 +1,17 @@
+import re
 from functools import lru_cache
 from io import StringIO
-import re
 from urllib.parse import quote_plus
 
 import numpy as np
 import pandas as pd
 import requests
+from athletic_pandas.models import WorkoutDataFrame
 
-from .constants import (
-    DEFAULT_HOST, ACTIVITY_COLUMN_TRANSLATION, ACTIVITY_COLUMN_ORDER)
-from .exceptions import (
-    GoldenCheetahNotAvailable, AthleteDoesNotExist,
-    ActivityDoesNotExist)
+from .constants import (ACTIVITY_COLUMN_ORDER, ACTIVITY_COLUMN_TRANSLATION,
+                        DEFAULT_HOST)
+from .exceptions import (ActivityDoesNotExist, AthleteDoesNotExist,
+                         GoldenCheetahNotAvailable)
 
 
 class GoldenCheetahClient:
@@ -88,9 +88,11 @@ class GoldenCheetahClient:
         
         activity_list = pd.read_csv(
             filepath_or_buffer=response_buffer,
-            parse_dates={'datetime': ['date', ' time']}
+            parse_dates={'datetime': ['date', 'time']},
+            sep=',\s*',
+            engine='python'
         )
-        activity_list.rename(columns=lambda x: x.lstrip().lower(), inplace=True)
+        activity_list.rename(columns=lambda x: x.lower(), inplace=True)
         activity_list.rename(
             columns=lambda x: '_' + x if x[0].isdigit() else x, inplace=True)
 
@@ -111,8 +113,8 @@ class GoldenCheetahClient:
         """
         response = self._get_request(self._activity_endpoint(athlete, filename)).json()
 
-        activity = pd.DataFrame(response['RIDE']['SAMPLES'])
-        activity.rename(columns=ACTIVITY_COLUMN_TRANSLATION, inplace=True)
+        activity = WorkoutDataFrame(response['RIDE']['SAMPLES'])
+        activity = activity.rename(columns=ACTIVITY_COLUMN_TRANSLATION)
 
         activity.index = pd.to_timedelta(activity.time, unit='s')
         activity.drop('time', axis=1, inplace=True)

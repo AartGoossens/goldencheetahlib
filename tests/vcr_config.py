@@ -1,6 +1,5 @@
 import vcr
 
-
 # Set to True to enable 'once' mock recording
 MOCK_RECORDING_ENABLED = False
 
