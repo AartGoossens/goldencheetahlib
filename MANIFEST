@@ -4,3 +4,4 @@ setup.py
 goldencheetahlib/__init__.py
 goldencheetahlib/client.py
 goldencheetahlib/constants.py
+goldencheetahlib/exceptions.py
