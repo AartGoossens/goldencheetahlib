@@ -2,7 +2,6 @@ from unittest import TestCase, skip
 
 import numpy as np
 import pandas as pd
-from athletic_pandas.models import WorkoutDataFrame
 
 from goldencheetahlib import GoldenCheetahClient, exceptions
 from vcr_config import vcr
@@ -19,8 +18,9 @@ class TestGoldenCheetahClient(TestCase):
         self.assertTrue(client.host)
 
     def test_client_init_without_athlete(self):
-        with self.assertRaises(TypeError):
-            GoldenCheetahClient()
+        client = GoldenCheetahClient()
+        self.assertFalse(hasattr(client, 'athlete'))
+        self.assertTrue(client.host)
 
     def test_client_init_non_existing_athlete(self):
         client = GoldenCheetahClient(athlete='NonExistingAthlete')
@@ -87,7 +87,7 @@ class TestGoldenCheetahClient(TestCase):
                 'http://localhost:12021/Aart/activity/{}'.format(filename),
                 cass.requests[0].uri)
 
-            self.assertTrue(isinstance(activity, WorkoutDataFrame))
+            self.assertTrue(isinstance(activity, pd.DataFrame))
             self.assertEqual(6722, len(activity))
             self.assertEqual(6, len(activity.columns))
             self.assertTrue('speed' in activity.columns)
@@ -135,7 +135,7 @@ class TestGoldenCheetahClient(TestCase):
 
             self.assertTrue(isinstance(bulk, pd.DataFrame))
             self.assertEqual(3, len(bulk))
-            self.assertTrue(isinstance(bulk.data[0], WorkoutDataFrame))
+            self.assertTrue(isinstance(bulk.data[0], pd.DataFrame))
 
     def test_get_last_activity(self):
         with vcr.use_cassette('test_get_last_activity.yaml') as cass:
@@ -150,7 +150,7 @@ class TestGoldenCheetahClient(TestCase):
             self.assertTrue(isinstance(last_activity, pd.Series))
             self.assertTrue('datetime' in last_activity.keys())
             self.assertTrue('axpower' in last_activity.keys())
-            self.assertTrue(isinstance(last_activity['data'], WorkoutDataFrame))
+            self.assertTrue(isinstance(last_activity['data'], pd.DataFrame))
             self.assertEqual(285, len(last_activity))
 
     def test__request_activity_list(self):
@@ -175,7 +175,7 @@ class TestGoldenCheetahClient(TestCase):
                 'http://localhost:12021/Aart/activity/{}'.format(filename),
                 cass.requests[0].uri)
 
-            self.assertTrue(isinstance(activity, WorkoutDataFrame))
+            self.assertTrue(isinstance(activity, pd.DataFrame))
             self.assertEqual(6722, len(activity))
             self.assertEqual(6, len(activity.columns))
             self.assertTrue('speed' in activity.columns)
