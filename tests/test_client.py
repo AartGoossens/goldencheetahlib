@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from goldencheetahlib import GoldenCheetahClient, exceptions
-from vcr_config import vcr
+from tests.vcr_config import vcr
 
 
 class TestGoldenCheetahClient(TestCase):

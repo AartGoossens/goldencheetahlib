@@ -64,7 +64,7 @@ class GoldenCheetahClient:
         """
         for index, filename in activities.filename.iteritems():
             activity_data = self.get_activity_by_filename(filename)
-            activities.set_value(index, 'data', activity_data)
+            activities.at[index, 'data'] = activity_data
         return activities
 
     def get_last_activity(self):
@@ -73,7 +73,7 @@ class GoldenCheetahClient:
         Keyword arguments:
         """
         last_activity = self.get_activity_list().iloc[-1]
-        last_activity.set_value('data', self.get_activity_by_filename(last_activity.filename))
+        last_activity.data = self.get_activity_by_filename(last_activity.filename)
         return last_activity
 
     def _request_activity_list(self, athlete):
