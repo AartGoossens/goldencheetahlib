@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
   name = 'goldencheetahlib',
-  packages = find_packages()
+  packages = find_packages(),
   version = '0.7.0',
   description = 'Python library that provides access to the GoldenCheeetah REST API',
   author = 'Aart Goossens',
