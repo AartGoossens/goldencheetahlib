@@ -79,10 +79,10 @@ class TestGoldenCheetahClient(TestCase):
             with self.assertRaises(exceptions.AthleteDoesNotExist):
                 self.client.get_activity_list()
 
-    def test_get_activity_by_filename(self):
+    def test_get_activity(self):
         with vcr.use_cassette('test_get_activity_by_filename.yaml') as cass:
             filename = '2014_01_06_16_45_24.json'
-            activity = self.client.get_activity_by_filename(filename)
+            activity = self.client.get_activity(filename)
             self.assertEqual(
                 'http://localhost:12021/Aart/activity/{}'.format(filename),
                 cass.requests[0].uri)
@@ -97,45 +97,46 @@ class TestGoldenCheetahClient(TestCase):
             self.assertTrue('latitude' in activity.columns)
             self.assertTrue('longitude' in activity.columns)
 
-    def test_get_activity_by_filename_incorrect_host(self):
+    def test_get_activity_incorrect_host(self):
         self.client.host = 'http://localhost:123456/'
         with self.assertRaises(exceptions.GoldenCheetahNotAvailable):
             filename = '2014_01_06_16_45_24.json'
-            self.client.get_activity_by_filename(filename)
+            self.client.get_activity(filename)
 
-    def test_get_activity_by_filename_non_existing_athlete(self):
+    def test_get_activity_non_existing_athlete(self):
         with vcr.use_cassette('test_get_activity_by_filename_non_existing_athlete.yaml') as cass:
             self.client.athlete = 'John Non Existent'
             filename = '2014_01_06_16_45_24.json'
             with self.assertRaises(exceptions.AthleteDoesNotExist):
-                self.client.get_activity_by_filename(filename)
+                self.client.get_activity(filename)
 
     def test_get_activity_by_non_existing_filename(self):
         with vcr.use_cassette('test_get_activity_by_non_existing_filename.yaml') as cass:
             filename = 'non_existing_filename.json'
             with self.assertRaises(exceptions.ActivityDoesNotExist):
-                self.client.get_activity_by_filename(filename)
+                self.client.get_activity(filename)
 
-    def test_get_activity_bulk(self):
-        with vcr.use_cassette('test_get_activity_bulk.yaml') as cass:
-            activity_list = self.client.get_activity_list()
-            bulk = self.client.get_activity_bulk(activity_list.iloc[:3])
+    def test_get_activities(self):
+        with vcr.use_cassette('test_get_activity_by_filename.yaml') as cass:
+            filename = '2014_01_06_16_45_24.json'
+            activities = self.client.get_activities([filename])
             self.assertEqual(
-                'http://localhost:12021/Aart',
+                'http://localhost:12021/Aart/activity/{}'.format(filename),
                 cass.requests[0].uri)
-            self.assertEqual(
-                'http://localhost:12021/Aart/activity/{}'.format(bulk.filename[0]),
-                cass.requests[1].uri)
-            self.assertEqual(
-                'http://localhost:12021/Aart/activity/{}'.format(bulk.filename[1]),
-                cass.requests[2].uri)
-            self.assertEqual(
-                'http://localhost:12021/Aart/activity/{}'.format(bulk.filename[2]),
-                cass.requests[3].uri)
 
-            self.assertTrue(isinstance(bulk, pd.DataFrame))
-            self.assertEqual(3, len(bulk))
-            self.assertTrue(isinstance(bulk.data[0], pd.DataFrame))
+            self.assertEqual(len(activities), 1)
+
+            activity = activities[0]
+
+            self.assertTrue(isinstance(activity, pd.DataFrame))
+            self.assertEqual(6722, len(activity))
+            self.assertEqual(6, len(activity.columns))
+            self.assertTrue('speed' in activity.columns)
+            self.assertTrue('distance' in activity.columns)
+            self.assertTrue('altitude' in activity.columns)
+            self.assertTrue('slope' in activity.columns)
+            self.assertTrue('latitude' in activity.columns)
+            self.assertTrue('longitude' in activity.columns)
 
     def test_get_last_activity(self):
         with vcr.use_cassette('test_get_last_activity.yaml') as cass:
@@ -144,14 +145,30 @@ class TestGoldenCheetahClient(TestCase):
                 'http://localhost:12021/Aart',
                 cass.requests[0].uri)
             self.assertEqual(
-                'http://localhost:12021/Aart/activity/{}'.format(last_activity.filename),
+                'http://localhost:12021/Aart/activity/2016_05_10_11_14_58.json',
                 cass.requests[1].uri)
 
-            self.assertTrue(isinstance(last_activity, pd.Series))
-            self.assertTrue('datetime' in last_activity.keys())
-            self.assertTrue('axpower' in last_activity.keys())
-            self.assertTrue(isinstance(last_activity['data'], pd.DataFrame))
-            self.assertEqual(285, len(last_activity))
+            self.assertTrue(isinstance(last_activity, pd.DataFrame))
+            self.assertTrue('power' in last_activity.columns.tolist())
+
+    def test_get_last_activities(self):
+        with vcr.use_cassette('test_get_last_activity.yaml') as cass:
+            last_activities = self.client.get_last_activities(n=1)
+            self.assertEqual(
+                'http://localhost:12021/Aart',
+                cass.requests[0].uri)
+            self.assertEqual(
+                'http://localhost:12021/Aart/activity/2016_05_10_11_14_58.json',
+                cass.requests[1].uri)
+
+            self.assertEqual(len(last_activities), 1)
+
+            last_activity = last_activities[0]
+
+            self.assertTrue(isinstance(last_activity, pd.DataFrame))
+            self.assertTrue('power' in last_activity.columns.tolist())
+            self.assertEqual(5404, len(last_activity))
+            self.assertEqual(5404, len(last_activity))
 
     def test__request_activity_list(self):
         with vcr.use_cassette('test__request_activity_list.yaml') as cass:
@@ -166,7 +183,7 @@ class TestGoldenCheetahClient(TestCase):
             self.assertTrue(isinstance(activity_list.data[0], np.float))
             self.assertTrue('datetime' in activity_list.columns)
             self.assertTrue('axpower' in activity_list.columns)
-    
+
     def test__request_activity_data(self):
         with vcr.use_cassette('test__request_activity_data.yaml') as cass:
             filename = '2014_01_06_16_45_24.json'
