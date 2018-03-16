@@ -47,34 +47,40 @@ class GoldenCheetahClient:
         """
         pass
 
-    def get_activity_by_filename(self, filename):
+    def get_activity(self, filename):
         """Get raw activity data for filename for self.athlete
         This call is slow and therefore this method is memory cached.
 
         Keyword arguments:
-        filename -- filename of request activity (e.g. \'2015_04_29_09_03_16.json\')
+        filename -- filename of activity (e.g. \'2015_04_29_09_03_16.json\')
         """
         return self._request_activity_data(self.athlete, filename)
 
-    def get_activity_bulk(self, activities):
-        """Get raw activity data in bulk for several activities
+    def get_activities(self, filenames):
+        """Get raw activity data for filenames for self.athlete
+        This call is slow and therefore this method is memory cached.
 
         Keyword arguments:
-        activities -- (slice of) activity list DataFrame
+        filenames -- filenames of activity (e.g. \'2015_04_29_09_03_16.json\')
         """
-        for index, filename in activities.filename.iteritems():
-            activity_data = self.get_activity_by_filename(filename)
-            activities.at[index, 'data'] = activity_data
-        return activities
+        return [self.get_activity(f) for f in filenames]
+
+    def get_last_activities(self, n):
+        """Get all activity data for the last activity
+
+        Keyword arguments:
+        """
+        filenames = self.get_activity_list().iloc[-n:].filename.tolist()
+        last_activities = [self.get_activity(f) for f in filenames]
+        return last_activities
 
     def get_last_activity(self):
         """Get all activity data for the last activity
 
         Keyword arguments:
         """
-        last_activity = self.get_activity_list().iloc[-1]
-        last_activity.data = self.get_activity_by_filename(last_activity.filename)
-        return last_activity
+        last_activities = self.get_last_activities(n=1)
+        return last_activities[0]
 
     def _request_activity_list(self, athlete):
         """Actually do the request for activity list
@@ -85,7 +91,7 @@ class GoldenCheetahClient:
         """
         response = self._get_request(self._athlete_endpoint(athlete))
         response_buffer = StringIO(response.text)
-        
+
         activity_list = pd.read_csv(
             filepath_or_buffer=response_buffer,
             parse_dates={'datetime': ['date', 'time']},
