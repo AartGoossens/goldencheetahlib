@@ -2,5 +2,5 @@ coverage>=4.2,<5
 isort==4.2.5
 pandas==0.22.0
 python-coveralls>=2.7.0,<3
-requests==2.18.4
+requests==2.20.0
 vcrpy==1.11.1
